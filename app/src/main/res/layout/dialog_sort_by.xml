@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:padding="10dp">
+
+
+    <TextView
+        android:id="@+id/dialog_popular"
+        android:layout_width="match_parent"
+        android:layout_height="40dp"
+        android:gravity="center_vertical"
+        android:padding="5dp"
+        android:text="@string/sort_popular"
+        android:textAlignment="center"
+        android:textSize="18sp" />
+
+
+    <TextView
+        android:id="@+id/dialog_rated"
+        android:layout_width="match_parent"
+        android:layout_height="40dp"
+        android:layout_below="@+id/dialog_popular"
+        android:gravity="center_vertical"
+        android:padding="5dp"
+        android:text="@string/sort_highest_rated"
+        android:textAlignment="center"
+        android:textSize="18sp" />
+
+
+</RelativeLayout>
