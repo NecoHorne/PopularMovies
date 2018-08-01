@@ -4,7 +4,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -40,7 +39,7 @@ public class MovieRecyclerAdapter extends RecyclerView.Adapter<MovieRecyclerAdap
     public void onBindViewHolder(@NonNull MovieRecyclerAdapter.ViewHolder holder, int position) {
         final Movie movie = mMovies.get(position);
         Picasso.with(mContext)
-                .load(NetworkUtils.BASE_IMAGE_URL + movie.getPosterPath())
+                .load(Constants.BASE_IMAGE_URL + movie.getPosterPath())
                 .placeholder(R.drawable.ic_popcorn)
                 .into(holder.gridPoster);
 

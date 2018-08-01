@@ -3,7 +3,7 @@
 Signed APK file located in PopularMovies\app\release\app-release.apk
 Install on android device or emulator to run. 
 
-API key has been removed from the file. In order to run project enter your API key in com/necohorne/popularmovies/Utils/NetworkUtils.java in the API_KEY Variable.
+API key has been saved in properties.gradle which has not been committed. In order to run project enter your API key in the app gradle file in the API_KEY Variable in the buildConfigField method under defaultConfig .
 
 If you do not have an API key create one at https://www.themoviedb.org/account/signup. 
 
