@@ -6,6 +6,8 @@ import android.net.NetworkInfo;
 import android.net.Uri;
 import android.util.Log;
 
+import com.necohorne.popularmovies.BuildConfig;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
@@ -13,45 +15,70 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Scanner;
 
+import static com.necohorne.popularmovies.Utils.Constants.BASE_URL;
+import static com.necohorne.popularmovies.Utils.Constants.MOVIE_PATH;
+import static com.necohorne.popularmovies.Utils.Constants.PAGE_PATH;
+import static com.necohorne.popularmovies.Utils.Constants.REVIEW_PATH;
+import static com.necohorne.popularmovies.Utils.Constants.SORT_BY_HIGHEST_RATED;
+import static com.necohorne.popularmovies.Utils.Constants.SORT_BY_POPULARITY;
+import static com.necohorne.popularmovies.Utils.Constants.SORT_STRING;
+import static com.necohorne.popularmovies.Utils.Constants.VIDEO_PATH;
+
 public class NetworkUtils {
 
     private static final String TAG = NetworkUtils.class.getSimpleName();
-
-    //add your api key in the variable below.
-    public static final String API_KEY = "ENTER_YOUR_API_KEY_HERE";
-
-    //path constants
-    public static final String BASE_URL = "https://api.themoviedb.org";
-    public static final String BASE_IMAGE_URL = "https://image.tmdb.org/t/p/w500";
-    public static final String API_URL = "https://api.themoviedb.org/3/movie/550?api_key=";
-    public static final String DISCOVER_URL = "https://api.themoviedb.org/3/discover/movie?api_key=";
-    public static final String SORT_BY_POPULARITY = "&language=en-US&sort_by=popularity.desc&page=";
-    public static final String SORT_BY_HIGHEST_RATED = "&language=en-US&sort_by=vote_average.desc&page=";
-
+    private static final String API_KEY = BuildConfig.API_KEY;
 
     public static URL buildPopularUrl(int pageNumber) {
-        Uri builtUri = Uri.parse(DISCOVER_URL + API_KEY + SORT_BY_POPULARITY + String.valueOf(pageNumber));
+        Uri builtUri = Uri.parse(BASE_URL + SORT_BY_POPULARITY + API_KEY + SORT_STRING + PAGE_PATH + String.valueOf(pageNumber));
 
         URL url = null;
         try {
             url = new URL(builtUri.toString());
+            Log.d(TAG, url.toString());
         } catch (MalformedURLException e) {
             e.printStackTrace();
         }
-//        Log.v(TAG, "Built URI " + url);
         return url;
     }
 
     public static URL buildHighRatedUrl(int pageNumber) {
-        Uri builtUri = Uri.parse(DISCOVER_URL + API_KEY + SORT_BY_HIGHEST_RATED + String.valueOf(pageNumber));
+        Uri builtUri = Uri.parse(BASE_URL + SORT_BY_HIGHEST_RATED + API_KEY + SORT_STRING + PAGE_PATH + String.valueOf(pageNumber));
 
         URL url = null;
         try {
             url = new URL(builtUri.toString());
+            Log.d(TAG, url.toString());
         } catch (MalformedURLException e) {
             e.printStackTrace();
         }
-//        Log.v(TAG, "Built URI " + url);
+        return url;
+    }
+
+    public static URL getMovieTrailer (String movieID){
+        Uri builtUri = Uri.parse(BASE_URL + MOVIE_PATH + movieID + VIDEO_PATH + API_KEY + SORT_STRING);
+
+        URL url = null;
+        try {
+            url = new URL(builtUri.toString());
+            Log.d(TAG, url.toString());
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        }
+        return url;
+    }
+
+    public static URL getMovieReviews (String movieID, String pageNum){
+
+        Uri builtUri = Uri.parse(BASE_URL + MOVIE_PATH + movieID + REVIEW_PATH + API_KEY + SORT_STRING + PAGE_PATH + pageNum);
+
+        URL url = null;
+        try {
+            url = new URL(builtUri.toString());
+            Log.d(TAG, url.toString());
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        }
         return url;
     }
 
@@ -77,7 +104,10 @@ public class NetworkUtils {
     private static boolean isNetworkAvailable(Context context) {
         ConnectivityManager connectivityManager
                 = (ConnectivityManager) context.getSystemService( Context.CONNECTIVITY_SERVICE);
-        NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
+        NetworkInfo activeNetworkInfo = null;
+        if(connectivityManager != null) {
+            activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
+        }
         return activeNetworkInfo != null;
     }
 

@@ -125,12 +125,7 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         protected Boolean doInBackground(Void... voids) {
-
-            if(NetworkUtils.hasInternetAccess(getApplicationContext())){
-                return true;
-            }else {
-                return false;
-            }
+            return NetworkUtils.hasInternetAccess(getApplicationContext());
         }
 
         @Override
@@ -202,5 +197,4 @@ public class MainActivity extends AppCompatActivity {
             }
         }
     }
-
 }
