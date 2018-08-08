@@ -35,7 +35,6 @@ public class NetworkUtils {
         URL url = null;
         try {
             url = new URL(builtUri.toString());
-            Log.d(TAG, url.toString());
         } catch (MalformedURLException e) {
             e.printStackTrace();
         }
@@ -48,34 +47,31 @@ public class NetworkUtils {
         URL url = null;
         try {
             url = new URL(builtUri.toString());
-            Log.d(TAG, url.toString());
         } catch (MalformedURLException e) {
             e.printStackTrace();
         }
         return url;
     }
 
-    public static URL getMovieTrailer (String movieID){
+    public static URL getMovieTrailerUrl (String movieID){
         Uri builtUri = Uri.parse(BASE_URL + MOVIE_PATH + movieID + VIDEO_PATH + API_KEY + SORT_STRING);
 
         URL url = null;
         try {
             url = new URL(builtUri.toString());
-            Log.d(TAG, url.toString());
         } catch (MalformedURLException e) {
             e.printStackTrace();
         }
         return url;
     }
 
-    public static URL getMovieReviews (String movieID, String pageNum){
+    public static URL getMovieReviewUrl(String movieID, int pageNum){
 
-        Uri builtUri = Uri.parse(BASE_URL + MOVIE_PATH + movieID + REVIEW_PATH + API_KEY + SORT_STRING + PAGE_PATH + pageNum);
+        Uri builtUri = Uri.parse(BASE_URL + MOVIE_PATH + movieID + REVIEW_PATH + API_KEY + SORT_STRING + PAGE_PATH + String.valueOf(pageNum));
 
         URL url = null;
         try {
             url = new URL(builtUri.toString());
-            Log.d(TAG, url.toString());
         } catch (MalformedURLException e) {
             e.printStackTrace();
         }

@@ -1,4 +1,4 @@
-package com.necohorne.popularmovies.Utils;
+package com.necohorne.popularmovies.Utils.RecyclerAdapters;
 
 import android.content.Context;
 import android.content.Intent;
@@ -12,6 +12,7 @@ import android.widget.ImageView;
 import com.necohorne.popularmovies.Activities.DetailActivity;
 import com.necohorne.popularmovies.Model.Movie;
 import com.necohorne.popularmovies.R;
+import com.necohorne.popularmovies.Utils.Constants;
 import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;

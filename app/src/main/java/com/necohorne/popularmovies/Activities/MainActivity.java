@@ -1,12 +1,16 @@
 package com.necohorne.popularmovies.Activities;
 
 import android.app.AlertDialog;
+import android.arch.lifecycle.Observer;
+import android.arch.lifecycle.ViewModelProviders;
 import android.content.Context;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -15,32 +19,52 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.necohorne.popularmovies.Data.MovieDatabase;
+import com.necohorne.popularmovies.Utils.MainViewModel;
 import com.necohorne.popularmovies.Model.Movie;
 import com.necohorne.popularmovies.R;
 import com.necohorne.popularmovies.Utils.JsonUtils;
-import com.necohorne.popularmovies.Utils.MovieRecyclerAdapter;
 import com.necohorne.popularmovies.Utils.NetworkUtils;
+import com.necohorne.popularmovies.Utils.RecyclerAdapters.MovieRecyclerAdapter;
 
 import java.io.IOException;
-import java.net.URL;
 import java.util.ArrayList;
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
-    private RecyclerView mRecyclerView;
-    private boolean sortByPopular;
-
-    //this variable indicates the page number in the url used to pull the data from the website.
+    private int sortByInt = 0;
     private static int pageNumber = 1;
+    private static final String SORTED_BY = "sorting";
+    //this variable indicates the page number in the url used to pull the data from the website.
 
+    private RecyclerView mRecyclerView;
     private MovieRecyclerAdapter mMovieRecyclerAdapter;
-    private URL searchURL;
+    private MovieDatabase mDatabase;
+    private ArrayList<Movie> mMovies;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        if(savedInstanceState != null){
+            if(savedInstanceState.containsKey(SORTED_BY)){
+                int sorting = savedInstanceState.getInt(SORTED_BY);
+                Log.d("Sorting order" , String.valueOf(sorting));
+                sortByInt = sorting;
+            } else {
+                sortByInt = 1;
+            }
+        }else {
+            sortByInt = 1;
+        }
+
+        initRecycler();
+
         new HasConnection().execute();
+        mDatabase = MovieDatabase.getInstance(getApplicationContext());
+        engageViewModel();
     }
 
     private void initRecycler(){
@@ -49,16 +73,18 @@ public class MainActivity extends AppCompatActivity {
         mRecyclerView.setLayoutManager(movieLayoutManager);
 
         //the below checks when the recycler has reached the bottom of the page, increments the url page number and adds the next page's movies to the list
-        mRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
-            @Override
-            public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
-                super.onScrollStateChanged(recyclerView, newState);
-                if(!recyclerView.canScrollVertically(1)) {
-                    pageNumber += 1;
-                    new FetchNextPageJson().execute();
+        if(sortByInt == 1 || sortByInt == 2){
+            mRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+                @Override
+                public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
+                    super.onScrollStateChanged(recyclerView, newState);
+                    if(!recyclerView.canScrollVertically(1)) {
+                        pageNumber += 1;
+                        new FetchNextPageJson().execute();
+                    }
                 }
-            }
-        });
+            });
+        }
     }
 
     @Override
@@ -79,6 +105,12 @@ public class MainActivity extends AppCompatActivity {
         return super.onOptionsItemSelected( item );
     }
 
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putInt(SORTED_BY, sortByInt);
+    }
+
     private void sortByDialog() {
 
         AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(MainActivity.this);
@@ -89,6 +121,7 @@ public class MainActivity extends AppCompatActivity {
 
         TextView popularSort = view.findViewById( R.id.dialog_popular);
         TextView ratingSort = view.findViewById( R.id.dialog_rated);
+        TextView favouriteSort = view.findViewById(R.id.dialog_fav);
 
         alertDialog.show();
 
@@ -97,8 +130,7 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View v) {
                 //reset page number.
                 pageNumber  = 1;
-                searchURL = NetworkUtils.buildPopularUrl(pageNumber);
-                sortByPopular = true;
+                sortByInt = 1;
                 //call the FetchMovieJson so the list get cleared and re populated.
                 new FetchMovieJson().execute();
                 alertDialog.dismiss();
@@ -111,12 +143,38 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View v) {
                 //reset page number.
                 pageNumber  = 1;
-                searchURL = NetworkUtils.buildHighRatedUrl(pageNumber);
-                sortByPopular = false;
+                sortByInt = 2;
                 //call the FetchMovieJson so the list get cleared and re populated.
                 new FetchMovieJson().execute();
                 alertDialog.dismiss();
                 Toast.makeText(MainActivity.this, "Sorted by Highest Rated", Toast.LENGTH_LONG).show();
+            }
+        });
+
+        favouriteSort.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                sortByInt = 3;
+                new FetchMovieJson().execute();
+                alertDialog.dismiss();
+                Toast.makeText(MainActivity.this, "Sorted by Favourite", Toast.LENGTH_LONG).show();
+            }
+        });
+    }
+
+    private void engageViewModel(){
+        MainViewModel viewModel = ViewModelProviders.of(this).get(MainViewModel.class);
+
+        viewModel.getMovies().observe(this, new Observer<List<Movie>>() {
+            @Override
+            public void onChanged(@Nullable List<Movie> movies) {
+                mMovies = (ArrayList<Movie>) movies;
+                if(sortByInt == 3){
+                    if(mMovies != null){
+                        mMovieRecyclerAdapter = new MovieRecyclerAdapter(mMovies, MainActivity.this);
+                        mRecyclerView.setAdapter(mMovieRecyclerAdapter);
+                    }
+                }
             }
         });
     }
@@ -131,14 +189,11 @@ public class MainActivity extends AppCompatActivity {
         @Override
         protected void onPostExecute(Boolean aBoolean) {
             if(aBoolean){
-                searchURL = NetworkUtils.buildPopularUrl(pageNumber);
-                sortByPopular = true;
-                Toast.makeText(MainActivity.this, "Sorted by Popular", Toast.LENGTH_LONG).show();
-                initRecycler();
                 new FetchMovieJson().execute();
             }else {
                 ImageView noConnection = findViewById(R.id.no_connection_iv);
                 noConnection.setVisibility(View.VISIBLE);
+                mRecyclerView.setVisibility(View.INVISIBLE);
                 Toast.makeText(MainActivity.this, "You are not connected to the internet, Please connect and try again", Toast.LENGTH_LONG).show();
             }
         }
@@ -148,10 +203,25 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         protected String doInBackground(Void... voids) {
-            try {
-                return NetworkUtils.getResponseFromHttpUrl(searchURL);
-            } catch(IOException e) {
-                e.printStackTrace();
+
+            //here I use a switch do determine how the user wants to sort. the sortByInt is set in the sortByDialog method in the click listener.
+            switch(sortByInt){
+                case 1:
+                    try {
+                        return NetworkUtils.getResponseFromHttpUrl(NetworkUtils.buildPopularUrl(pageNumber));
+                    } catch(IOException e) {
+                        e.printStackTrace();
+                    }
+                    break;
+                case 2:
+                    try {
+                        return NetworkUtils.getResponseFromHttpUrl(NetworkUtils.buildHighRatedUrl(pageNumber));
+                    } catch(IOException e) {
+                        e.printStackTrace();
+                    }
+                    break;
+                case 3:
+                    return null;
             }
             return null;
         }
@@ -164,6 +234,9 @@ public class MainActivity extends AppCompatActivity {
                     mMovieRecyclerAdapter = new MovieRecyclerAdapter(movies, MainActivity.this);
                     mRecyclerView.setAdapter(mMovieRecyclerAdapter);
                 }
+                //here we use an else if instead of an else because it might be that we are querying the server and got a null so we make sure that we are in fact checking the database.
+            } else if(sortByInt == 3) {
+                    engageViewModel();
             }
         }
     }
@@ -173,22 +246,30 @@ public class MainActivity extends AppCompatActivity {
         @Override
         protected String doInBackground(Void... voids) {
 
-            if(sortByPopular){
-                searchURL = NetworkUtils.buildPopularUrl(pageNumber);
-            }else {
-                searchURL = NetworkUtils.buildHighRatedUrl(pageNumber);
-            }
-
-            try {
-                return NetworkUtils.getResponseFromHttpUrl(searchURL);
-            } catch(IOException e) {
-                e.printStackTrace();
+            switch(sortByInt){
+                case 1:
+                    try {
+                        return NetworkUtils.getResponseFromHttpUrl(NetworkUtils.buildPopularUrl(pageNumber));
+                    } catch(IOException e) {
+                        e.printStackTrace();
+                    }
+                    break;
+                case 2:
+                    try {
+                        return NetworkUtils.getResponseFromHttpUrl(NetworkUtils.buildHighRatedUrl(pageNumber));
+                    } catch(IOException e) {
+                        e.printStackTrace();
+                    }
+                    break;
+                case 3:
+                    return null;
             }
             return null;
         }
 
         @Override
         protected void onPostExecute(String jsonResult) {
+
             if(jsonResult != null && !jsonResult.equals("")){
                 ArrayList<Movie> movies = JsonUtils.getNextPageList(jsonResult);
                 if(movies.size() > 0){

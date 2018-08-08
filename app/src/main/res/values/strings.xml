@@ -11,4 +11,10 @@
     <string name="sort_highest_rated">Sort By Highest Rated</string>
     <string name="sort_popular">Sort By Most Popular</string>
     <string name="no_connection_image_view">no connection image view</string>
+    <string name="video_thumbnail">video thumbnail</string>
+    <string name="author">Author</string>
+    <string name="unknown">Unknown</string>
+    <string name="trailers">Trailers:</string>
+    <string name="reviews">Reviews:</string>
+    <string name="sort_by_favourite">Sort By Favourite</string>
 </resources>
