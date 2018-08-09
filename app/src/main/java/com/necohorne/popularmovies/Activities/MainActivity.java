@@ -35,8 +35,8 @@ public class MainActivity extends AppCompatActivity {
 
     private int sortByInt = 0;
     private static int pageNumber = 1;
-    private static final String SORTED_BY = "sorting";
     //this variable indicates the page number in the url used to pull the data from the website.
+    private static final String SORTED_BY = "sorting";
 
     private RecyclerView mRecyclerView;
     private MovieRecyclerAdapter mMovieRecyclerAdapter;
@@ -50,9 +50,7 @@ public class MainActivity extends AppCompatActivity {
 
         if(savedInstanceState != null){
             if(savedInstanceState.containsKey(SORTED_BY)){
-                int sorting = savedInstanceState.getInt(SORTED_BY);
-                Log.d("Sorting order" , String.valueOf(sorting));
-                sortByInt = sorting;
+                sortByInt = savedInstanceState.getInt(SORTED_BY);
             } else {
                 sortByInt = 1;
             }

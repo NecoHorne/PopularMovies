@@ -40,6 +40,7 @@ public class TrailerRecyclerAdapter extends RecyclerView.Adapter<TrailerRecycler
 
         final String youtubeUrl = mLinks.get(position);
 
+        //get the video thumbnail and use picasso to load it into an image view.
         Uri uri = Uri.parse(youtubeUrl);
         String videoID = uri.getQueryParameter("v");
         String url = YOUTUBE_IMAGE_URL + videoID + THUMBNAIL_QUERY;
